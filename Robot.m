@@ -1,7 +1,7 @@
 classdef Robot
     % contains state of the robot and methods to move it around
     properties%(GetAccess=private)
-        lens = [1 1 .5 .5]; % [back-left back-right fore-left fore-right] 
+        lens = 4*[1 1 .5 .5]; % [back-left back-right fore-left fore-right] 
         state % angles - degrees
         base = [0;0]; % assume base at origin
         elbows
@@ -33,8 +33,21 @@ classdef Robot
         function states = pick_up(obj, box)
             % return states of the robot to pickup box
             init_state = obj.state;
-            final_state = obj.get_state(box.get_grasp());            
-            
+            %angles = [30 75];
+            final_state = obj.get_state(box.get_grasp());%, angles);
+            % debug
+            if numel(final_state) < 2
+                obj.state(1) = angles(1);
+                obj.state(2) = angles(2);
+                obj = update_params(obj);
+                obj.draw_bot();
+            end
+            states = final_state;            
+        end
+        
+        function obj = change_state(obj, new_state)
+            obj.state = new_state;
+            obj = update_params(obj);
         end
         
         function states = move_box(obj, box)
@@ -56,7 +69,52 @@ classdef Robot
             
         end
         
-        function grasp = get_state(obj, ee_locs)
+        function grasp = get_state(obj, ee_loc)
+            % get final state for a certain end effector location and
+            % assuming base at origin and fore-arm half the size of
+                        
+            % left back-arm
+            a = ee_loc(1,1);
+            b = ee_loc(2,1);
+            l = obj.lens(3);
+            c = (3*l^2+a^2+b^2)/(2*b);
+            d = a/(2*b);
+            capD = (4*d^2*c^2 - 4*(1+d^2)*(c^2-4*l^2));
+            x = 2*(d*c)/(2*(1+d^2)) * [sqrt(capD) -sqrt(capD)];
+            y = c - d*x;
+            
+            elbow_angles = to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))]);
+            lt_elbow = [x; y];
+            
+            % right back-arm
+            a = ee_loc(1,2);
+            b = ee_loc(2,2);
+            l = obj.lens(3);
+            c = (3*l^2+a^2+b^2)/(2*b);
+            d = a/(2*b);
+            capD = (4*d^2*c^2 - 4*(1+d^2)*(c^2-4*l^2));
+            x = 2*(d*c)/(2*(1+d^2)) * [sqrt(capD) -sqrt(capD)];
+            y = c - d*x;
+
+            elbow_angles = [elbow_angles, to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))])];
+            rt_elbow = [x; y];
+            
+%             lt_elbow = obj.base + [cosd(elbow_angles(1,1))*obj.lens(1); sind(elbow_angles(1,1))*obj.lens(1)];
+%             rt_elbow = obj.base + [cosd(elbow_angles(2,1))*obj.lens(2); sind(elbow_angles(2,1))*obj.lens(2)];
+            
+%             % check if end-effector loc can be reached
+%             if (norm(lt_ee-lt_elbow)>obj.lens(3) || norm(rt_ee-rt_elbow)>obj.lens(4))
+%                 grasp = 0;
+%                 return
+%             end
+
+            lt_ee = repmat([ee_loc(1,1); ee_loc(2,1)],1,2);
+            rt_ee = repmat([ee_loc(1,2); ee_loc(2,2)],1,2);
+            
+            % angle b/w horizontal and fore-arms
+            alpha_lt = (to_degrees(atan2((lt_ee(2,:)-lt_elbow(2,:)), (lt_ee(1,:)-lt_elbow(1,:)))))';
+            alpha_rt = (to_degrees(atan2((rt_ee(2,:)-rt_elbow(2,:)), (rt_ee(1,:)-rt_elbow(1,:)))))';
+            grasp = [elbow_angles(:,1) elbow_angles(:,2) alpha_lt+elbow_angles(:,1) 360 - (alpha_rt+elbow_angles(:,2))];
             
         end
     end
