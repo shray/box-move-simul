@@ -76,28 +76,34 @@ classdef Robot
             % left back-arm
             a = ee_loc(1,1);
             b = ee_loc(2,1);
-            l = obj.lens(3);
-            c = (3*l^2+a^2+b^2)/(2*b);
-            d = a/(2*b);
-            capD = (4*d^2*c^2 - 4*(1+d^2)*(c^2-4*l^2));
-            x = 2*(d*c)/(2*(1+d^2)) * [sqrt(capD) -sqrt(capD)];
-            y = c - d*x;
+            l1 = obj.lens(3);
+            l2 = obj.lens(1);
+            c = (l2^2-l1^2+a^2+b^2)/(2*b);
+            d = -a/b;
+            capD = sqrt((4*d^2*c^2 - 4*(1+d^2)*(c^2-l2^2)));
+            x = (-2*(d*c) + [capD -capD])./(2*(1+d^2));
+            y = c + d*x;
             
-            elbow_angles = to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))]);
+            lt_elbow_a = to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))]);
+            lt_ee = repmat([ee_loc(1,1); ee_loc(2,1)],1,2);
+
             lt_elbow = [x; y];
+            
+            alpha_lt = (to_degrees(atan2((lt_ee(2,:)-lt_elbow(2,:)), (lt_ee(1,:)-lt_elbow(1,:)))))';
             
             % right back-arm
             a = ee_loc(1,2);
             b = ee_loc(2,2);
             l = obj.lens(3);
             c = (3*l^2+a^2+b^2)/(2*b);
-            d = a/(2*b);
+            d = a/(b);
             capD = (4*d^2*c^2 - 4*(1+d^2)*(c^2-4*l^2));
-            x = 2*(d*c)/(2*(1+d^2)) * [sqrt(capD) -sqrt(capD)];
+            x = 2*(d*c)/(2*(1+d^2)) + [sqrt(capD) -sqrt(capD)];
             y = c - d*x;
 
-            elbow_angles = [elbow_angles, to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))])];
+            rt_elbow_a =  [to_degrees([atan2(y(1),x(1)); atan2(y(2),x(2))])];
             rt_elbow = [x; y];
+            
             
 %             lt_elbow = obj.base + [cosd(elbow_angles(1,1))*obj.lens(1); sind(elbow_angles(1,1))*obj.lens(1)];
 %             rt_elbow = obj.base + [cosd(elbow_angles(2,1))*obj.lens(2); sind(elbow_angles(2,1))*obj.lens(2)];
@@ -108,14 +114,15 @@ classdef Robot
 %                 return
 %             end
 
-            lt_ee = repmat([ee_loc(1,1); ee_loc(2,1)],1,2);
             rt_ee = repmat([ee_loc(1,2); ee_loc(2,2)],1,2);
             
             % angle b/w horizontal and fore-arms
-            alpha_lt = (to_degrees(atan2((lt_ee(2,:)-lt_elbow(2,:)), (lt_ee(1,:)-lt_elbow(1,:)))))';
-            alpha_rt = (to_degrees(atan2((rt_ee(2,:)-rt_elbow(2,:)), (rt_ee(1,:)-rt_elbow(1,:)))))';
-            grasp = [elbow_angles(:,1) elbow_angles(:,2) alpha_lt+elbow_angles(:,1) 360 - (alpha_rt+elbow_angles(:,2))];
             
+            alpha_rt = (to_degrees(atan2((rt_ee(2,:)-rt_elbow(2,:)), (rt_ee(1,:)-rt_elbow(1,:)))))';
+            
+            elbow_angles = 0;
+%             grasp = [elbow_angles(:,1) elbow_angles(:,2) alpha_lt+elbow_angles(:,1) 360 - (alpha_rt+elbow_angles(:,2))];
+            grasp = [lt_elbow_a(1) rt_elbow_a(1) alpha_lt(1)+lt_elbow_a(1) 360 - (alpha_rt(1)+rt_elbow_a(1))];            
         end
     end
         
