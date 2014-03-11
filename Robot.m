@@ -1,7 +1,7 @@
 classdef Robot
     % contains state of the robot and methods to move it around
     properties%(GetAccess=private)
-        lens = 4*[1 1 1 1]; % [back-left back-right fore-left fore-right] 
+        lens = 4*[1. 1. .3 .3]; % [back-left back-right fore-left fore-right] 
         state % angles - degrees
         base = [0;0]; % assume base at origin
         elbows
@@ -12,7 +12,7 @@ classdef Robot
         function obj = Robot(init_state)
             %initialize state
             if nargin < 1
-                obj.state = [60 120 120 360-120];                
+                obj.state = [120 60 360-120 120];                
             else
                 obj.state = init_state;
             end            
@@ -37,10 +37,7 @@ classdef Robot
             final_state = obj.get_state(box.get_grasp());%, angles);
             % debug
             if numel(final_state) < 2
-                obj.state(1) = angles(1);
-                obj.state(2) = angles(2);
-                obj = update_params(obj);
-                obj.draw_bot();
+                'Box can not be reached'
             end
             states = final_state;            
         end
@@ -63,11 +60,14 @@ classdef Robot
             
             %draw
             hold on
-            line([[obj.base(1); lt_elbow(1)], [obj.base(1); rt_elbow(1)], [lt_elbow(1); lt_ee(1)], [rt_elbow(1); rt_ee(1)]],...
-                [[obj.base(2); lt_elbow(2)], [obj.base(2); rt_elbow(2)], [lt_elbow(2); lt_ee(2)], [rt_elbow(2); rt_ee(2)]])
+            line([[obj.base(1); lt_elbow(1)], [lt_elbow(1); lt_ee(1)]],...
+                [[obj.base(2); lt_elbow(2)], [lt_elbow(2); lt_ee(2)]], 'color', 'r')
+            line([[obj.base(1); rt_elbow(1)], [rt_elbow(1); rt_ee(1)]],...
+                [[obj.base(2); rt_elbow(2)], [rt_elbow(2); rt_ee(2)]], 'color','b')
             hold off
             
         end
+                
         
         function grasp = get_state(obj, ee_loc)
             % get final state for a certain end effector location and
@@ -119,12 +119,41 @@ classdef Robot
             
             % angle b/w horizontal and fore-arms
             
-            alpha_rt = (to_degrees(atan2((rt_ee(2,:)-rt_elbow(2,:)), -(rt_ee(1,:)-rt_elbow(1,:)))))';
+            alpha_rt = (to_degrees(atan2((rt_ee(2,:)-rt_elbow(2,:)), -(rt_ee(1,:)-rt_elbow(1,:)))))';                        
             
-            elbow_angles = 0;
+            rt_ee_a = (alpha_rt+rt_elbow_a);
+            lt_ee_a = (alpha_lt+lt_elbow_a);
+            
+            angle_choices = obj.choose_bw_angles(lt_elbow_a, lt_ee_a, rt_elbow_a, rt_ee_a);
 %             grasp = [elbow_angles(:,1) elbow_angles(:,2) alpha_lt+elbow_angles(:,1) 360 - (alpha_rt+elbow_angles(:,2))];
-            grasp = [lt_elbow_a(2) rt_elbow_a(1) alpha_lt(2)+lt_elbow_a(2) (alpha_rt(1)+rt_elbow_a(1))];            
+            %grasp = [lt_elbow_a(2) rt_elbow_a(1) alpha_lt(2)+lt_elbow_a(2) (alpha_rt(1)+rt_elbow_a(1))];            
+            grasp = [lt_elbow_a(angle_choices(1)) rt_elbow_a(angle_choices(2)) lt_ee_a(angle_choices(1)) rt_ee_a(angle_choices(2))];            
+
         end
+        
+        function choices = choose_bw_angles(obj, l_el, r_el, l_ee, r_ee)
+            % Two choices are presented for the right and left arms each to
+            % reach a certain goal. We check constraints and return the
+            % choice [left, right] if the constraints are met
+            elbow_angle = [30 180]; % min, max
+            base_angle = [30 120];
+            for i = 1:size(l_el,1)
+                for j = 1:size(r_el,1)
+                    if (((l_ee(i))>elbow_angle(1)) && ((l_ee(i))<elbow_angle(2)))
+                        'reached2'
+                        if (((r_ee(j))>elbow_angle(1)) && ((r_ee(j))<elbow_angle(2)))
+                            'reached3'
+                            if ((l_el(i)-r_el(j))>base_angle(1) && (l_el(i)-r_el(j))<base_angle(2))
+                                choices = [i,j];
+                                return
+                            end
+                        end
+                    end
+                end                
+            end
+            choices = [2 1];
+        end
+                                            
     end
         
 end

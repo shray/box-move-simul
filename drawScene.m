@@ -3,6 +3,10 @@ function drawScene( robot, box )
 %   Detailed explanation goes here
 
 figure
+% clf
+xlim([-5 5])
+ylim([0 10])
+
 robot.draw_bot();
 hold on
 box.draw();

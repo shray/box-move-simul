@@ -9,7 +9,7 @@ classdef Box
     methods
         function obj = Box()
             % constructor - TODO check if the box reachable
-            obj.loc = [1 4];
+            obj.loc = [3 2];
             obj.dimensions = 4*[.25; .25];
         end
             
