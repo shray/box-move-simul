@@ -6,6 +6,7 @@ classdef Robot
         base = [0;0]; % assume base at origin
         elbows
         end_effs
+        state_speed = [1 1 1 1]; % currently specified max speed
     end
     methods
         
@@ -39,7 +40,15 @@ classdef Robot
             if numel(final_state) < 2
                 'Box can not be reached'
             end
-            states = final_state;            
+            
+            % generate states
+            num_states = ceil(max(abs(final_state-init_state)./obj.state_speed));
+            step_vector = (final_state-init_state)/num_states;
+            states = [];
+            
+            for i = 0:num_states
+                states = [states; init_state+i*step_vector];
+            end
         end
         
         function obj = change_state(obj, new_state)
