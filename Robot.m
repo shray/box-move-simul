@@ -31,6 +31,16 @@ classdef Robot
             obj.end_effs = [lt_ee, rt_ee];
         end
         
+        function ee = compute_ee(obj, state)
+            %return the end-effector positions for a given robot state
+            lt_elbow = obj.base + [cosd(state(1))*obj.lens(1); sind(state(1))*obj.lens(1)];
+            rt_elbow = obj.base + [cosd(state(2))*obj.lens(2); sind(state(2))*obj.lens(2)];
+            obj.elbows = [lt_elbow, rt_elbow];
+            lt_ee = lt_elbow + [cosd(180 - (state(3)-state(1)))*obj.lens(3); sind(180 - (state(3)-state(1)))*obj.lens(3)];
+            rt_ee = rt_elbow + [cosd(180 - (state(4)-state(2)))*obj.lens(4); sind(180 - (state(4)-state(2)))*obj.lens(4)];
+            ee = [lt_ee rt_ee];
+        end
+        
         function states = pick_up(obj, box)
             % return states of the robot to pickup box
             init_state = obj.state;
@@ -56,9 +66,29 @@ classdef Robot
             obj = update_params(obj);
         end
         
-        function states = move_box(obj, box)
-            % return 2D position of end-effectors after putting down box
-            states = 0;
+        function [states, box_disp] = move_box(obj, box)
+            %TODO: check if end-effectors are grasping the box
+            % return states of the bot while moving the box
+            % of end-effectors after putting down box and box 
+            % displacements
+            b_angle_change = 120;
+            init_state = obj.state;
+            final_state = obj.state + [b_angle_change b_angle_change 0 0];
+            %generate states
+            num_states = ceil(max(abs(final_state-init_state)./obj.state_speed));
+            step_vector = (final_state-init_state)/num_states;
+            states = [];
+            box_disp=[];
+            prev_state = init_state;
+            
+            for i = 0:num_states
+                next_state = init_state+i*step_vector;
+                states = [states; next_state];
+                prev_ee = obj.compute_ee(prev_state);
+                next_ee = obj.compute_ee(next_state);
+                box_disp = [box_disp; [next_ee(:,1)-prev_ee(:,1)]'];
+                prev_state = next_state;
+            end
         end
         
         function draw_bot(obj)
@@ -73,6 +103,7 @@ classdef Robot
                 [[obj.base(2); lt_elbow(2)], [lt_elbow(2); lt_ee(2)]], 'color', 'r')
             line([[obj.base(1); rt_elbow(1)], [rt_elbow(1); rt_ee(1)]],...
                 [[obj.base(2); rt_elbow(2)], [rt_elbow(2); rt_ee(2)]], 'color','b')
+            scatter(obj.end_effs(1,:), obj.end_effs(2,:));
             hold off
             
         end

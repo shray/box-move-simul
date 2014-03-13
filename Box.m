@@ -1,6 +1,6 @@
 classdef Box
     %BOX: class for box objects 
-    
+    %TODO: do not assume the box to be axis-alignedlo
     properties
         dimensions % height, width of box
         loc % x,y location of upper left corner of rectangle
@@ -20,6 +20,14 @@ classdef Box
         end
         function draw(obj)
             rectangle('Position',[obj.loc(1) obj.loc(2) obj.dimensions(1) obj.dimensions(2)])
+        end
+        
+        function obj = set_loc(obj, new_loc)
+            obj.loc = new_loc;
+        end
+        
+        function obj = displace(obj, vec)
+            obj.loc = obj.loc + vec;
         end
     end
     
