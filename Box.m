@@ -1,23 +1,27 @@
 classdef Box
     %BOX: class for box objects 
-    %TODO: do not assume the box to be axis-alignedlo
+    %TODO: do not assume the box to be axis-aligned
     properties
         dimensions % height, width of box
         loc % x,y location of upper left corner of rectangle
+        grasp_locs % two points
     end
     
     methods
         function obj = Box()
             % constructor - TODO check if the box reachable
             obj.loc = [3 2];
-            obj.dimensions = 4*[.25; .25];
+            obj.dimensions = 4*[.25; .25];            
         end
             
         function grasp_locs = get_grasp(obj)
             % returns the mid-points of the parallel edges
             grasp_locs = [obj.loc(1), obj.loc(1)+obj.dimensions(1);...
                           (2*obj.loc(2)+obj.dimensions(2))/2, (2*obj.loc(2)+obj.dimensions(2))/2];
+            obj.grasp_locs = grasp_locs;
+            
         end
+        
         function draw(obj)
             rectangle('Position',[obj.loc(1) obj.loc(2) obj.dimensions(1) obj.dimensions(2)])
         end

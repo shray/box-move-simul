@@ -71,8 +71,9 @@ classdef Robot
             % return states of the bot while moving the box
             % of end-effectors after putting down box and box 
             % displacements
-            b_angle_change = 120;
+            
             init_state = obj.state;
+            b_angle_change = 180 - 2*init_state(2);
             final_state = obj.state + [b_angle_change b_angle_change 0 0];
             %generate states
             num_states = ceil(max(abs(final_state-init_state)./obj.state_speed));
@@ -180,9 +181,9 @@ classdef Robot
             for i = 1:size(l_el,1)
                 for j = 1:size(r_el,1)
                     if (((l_ee(i))>elbow_angle(1)) && ((l_ee(i))<elbow_angle(2)))
-                        'reached2'
+                        %'reached2'
                         if (((r_ee(j))>elbow_angle(1)) && ((r_ee(j))<elbow_angle(2)))
-                            'reached3'
+                            %'reached3'
                             if ((l_el(i)-r_el(j))>base_angle(1) && (l_el(i)-r_el(j))<base_angle(2))
                                 choices = [i,j];
                                 return
