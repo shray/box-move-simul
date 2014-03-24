@@ -49,6 +49,7 @@ classdef Robot
             %angles = [30 75];
             final_state = obj.get_state(box.get_grasp());%, angles);
             % debug
+            final_state(3) = final_state(3)+360;
             if numel(final_state) < 2
                 'Box can not be reached'
             end
@@ -75,7 +76,7 @@ classdef Robot
             % displacements
             
             init_state = obj.state;
-            b_angle_change = 180 - 2*init_state(2);
+            b_angle_change = 180 - 45-init_state(2);
             final_state = obj.state + [b_angle_change b_angle_change 0 0];
             %generate states
             num_states = ceil(max(abs(final_state-init_state)./obj.state_speed));
