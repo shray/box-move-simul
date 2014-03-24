@@ -42,6 +42,8 @@ classdef Robot
         end
         
         function states = pick_up(obj, box)
+        %TODO: Fix any errors associated with box-location being a
+        %column vector now
             % return states of the robot to pickup box
             init_state = obj.state;
             %angles = [30 75];
@@ -87,7 +89,7 @@ classdef Robot
                 states = [states; next_state];
                 prev_ee = obj.compute_ee(prev_state);
                 next_ee = obj.compute_ee(next_state);
-                box_disp = [box_disp; [next_ee(:,1)-prev_ee(:,1)]'];
+                box_disp = [box_disp; [next_ee(:,1)-prev_ee(:,1)]];
                 prev_state = next_state;
             end
         end

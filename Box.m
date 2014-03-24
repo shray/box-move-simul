@@ -66,7 +66,7 @@ classdef Box
         
         function obj = trans_rot(obj, trans, rot)
         % translate and rotate box
-            if nargin < 2
+            if nargin < 3
                 rot = 0;
             end
             
