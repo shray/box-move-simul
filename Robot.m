@@ -89,11 +89,10 @@ classdef Robot
             for i = 0:num_states
                 next_state = init_state+i*step_vector;
                 states = [states; next_state];
-                prev_ee = obj.compute_ee(prev_state);
+% $$$                 prev_ee = obj.compute_ee(prev_state);
                 next_ee = obj.compute_ee(next_state);
-                ee_disp = next_ee-prev_ee;
-                cur_box_disp = mean(ee_disp,2);
-                box_disp = [box_disp; cur_box_disp];
+% $$$                 cur_box_disp = mean(ee_disp,2);
+                box_disp = [box_disp; next_ee(:,1)' next_ee(:,2)'];
                 prev_state = next_state;
             end
         end

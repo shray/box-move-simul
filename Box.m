@@ -83,6 +83,30 @@ classdef Box
             
             obj = update_end_pts(obj);
         end
+        
+        function obj = move_by_grasp(obj, new_grasp)
+        % Moves the box acc to new grasp-positions, assuming no
+        % slippage for now
+            gl = new_grasp(1:2)'; % left grasp
+            gr = new_grasp(3:4)' % right grasp
+            gvec = gr-gl/norm(gr-gl);
+            obj.orientation = to_degrees(real(acos(dot(gvec, [1;0]))));
+            %debug
+            obj.orientation
+            obj = update_end_pts(obj);
+            old_g = obj.get_grasp();
+            trans_l = gl - old_g(:,1); % compute translation as the
+                                       % difference b/w new grasp
+                                       % and the grasp pts of
+                                       % rotated box
+            trans_r = gr - old_g(:,2);
+            if norm(trans_l-trans_r) > 1.e-10 % ensure trans the same
+                %debug
+                'this failed'
+            end
+            trans = (trans_l+ trans_r)/2;
+            obj = trans_rot(obj, trans); % actually translate and rotate
+        end
                 
 % $$$         function obj = displace(obj, vec)
 % $$$             obj.loc = obj.loc + vec;
