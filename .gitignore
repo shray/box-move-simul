@@ -1,5 +1,7 @@
-#matlab temporaries
+# matlab temporaries
 *~
 .*
-#keynote files
+# keynote files
 *.key
+# emacs temporaries
+\#*
