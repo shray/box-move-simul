@@ -84,12 +84,16 @@ classdef Robot
             box_disp=[];
             prev_state = init_state;
             
+            % TODO: only compute new end-effector locs here and
+            % feed to Box for it to compute the new box loc & orient
             for i = 0:num_states
                 next_state = init_state+i*step_vector;
                 states = [states; next_state];
                 prev_ee = obj.compute_ee(prev_state);
                 next_ee = obj.compute_ee(next_state);
-                box_disp = [box_disp; [next_ee(:,1)-prev_ee(:,1)]];
+                ee_disp = next_ee-prev_ee;
+                cur_box_disp = mean(ee_disp,2);
+                box_disp = [box_disp; cur_box_disp];
                 prev_state = next_state;
             end
         end
