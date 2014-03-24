@@ -16,7 +16,7 @@ end
 
 for i=1:size(rob_moving,1)
     the_rob = change_state(the_rob, rob_moving(i,:));
-    boxer = displace(boxer, box_moving(i,:));
+    boxer = trans_rot(boxer, box_moving(i,:));
     drawScene(the_rob, boxer);
     pause(thePause);
 end

@@ -64,7 +64,7 @@ classdef Box
             obj = update_end_pts(obj);                
         end
         
-        function obj = trans_rot_box(obj, trans, rot)
+        function obj = trans_rot(obj, trans, rot)
         % translate and rotate box
             if nargin < 2
                 rot = 0;
@@ -82,12 +82,6 @@ classdef Box
             end
             
             obj = update_end_pts(obj);
-            
-            %debug
-            if obj.orientation > 30
-                'stop here'
-            end
-            
         end
                 
 % $$$         function obj = displace(obj, vec)
